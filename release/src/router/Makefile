@@ -1974,12 +1974,12 @@ libncurses/stamp-h1:
 	CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -fPIC" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections -fPIC" \
 	LIBS="-lstdc++" \
-	$(CONFIGURE) --prefix=/usr --with-shared --with-normal --disable-debug --without-ada --without-manpages --without-progs --without-tests --with-termlib
+	$(CONFIGURE) --prefix=/usr --with-shared --with-normal --disable-debug --without-ada --without-manpages --without-progs --without-tests --with-termlib --enable-rpath
 	touch libncurses/stamp-h1
 
 libncurses: libncurses/stamp-h1
 	@$(SEP)
-	$(MAKE) -C libncurses $(PARALLEL_BUILD)
+	$(MAKE) -C libncurses
 	$(MAKE) -C libncurses DESTDIR=$(TOP)/libncurses/staged install
 
 libncurses-clean:
@@ -2021,7 +2021,7 @@ mysql/stamp-h1: openssl zlib libncurses
 	CPPFLAGS="-O2 -Wall -fno-delete-null-pointer-checks -funit-at-a-time --param large-function-growth=800 \
 		--param max-inline-insns-single=3000 -ffunction-sections -fdata-sections -I$(TOP)/zlib \
 		-I$(TOP)/openssl/include -I$(TOP)/libncurses/include" \
-	LDFLAGS="-L$(TOP)/openssl -L$(TOP)/zlib/staged/usr/lib -L$(TOP)/libncurses/lib -fPIC -EL" \
+	LDFLAGS="-L$(TOP)/openssl -L$(TOP)/zlib/staged/usr/lib -L$(TOP)/libncurses/lib -fPIC -EL -Wl,-rpath-link,$(TOP)/libncurses/lib" \
 	LIBS="-lcrypt -lz -lstdc++ -lssl -lcrypto -lncurses" \
 	$(CONFIGURE) --prefix=/usr \
 		--without-debug --without-docs --without-man --with-charset=utf8 --with-extra-charsets=ascii,latin1,gb2312,gbk \
