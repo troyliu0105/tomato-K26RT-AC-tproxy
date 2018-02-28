@@ -593,7 +593,8 @@ genSO("${root}/usr/lib/libxml2.so.2.9.1", "${router}/libxml2/.libs/libxml2.a");
 genSO("${root}/usr/lib/libpcre.so.1.2.7", "${router}/pcre/.libs/libpcre.a");
 genSO("${root}/usr/lib/libpcreposix.so.0.0.4", "${router}/pcre/.libs/libpcreposix.a");
 genSO("${root}/usr/lib/libatomic_ops.so.1.0.3", "${router}/libatomic_ops/src/.libs/libatomic_ops.a");
-genSO("${root}/usr/lib/libncurses.so.6", "${router}/libncurses/lib/libncurses.a");
+genSO("${root}/usr/lib/libncurses.so.6", "${router}/libncurses/lib/libncurses.a", "", "-L${router}/libncurses/lib");
+genSO("${root}/usr/lib/libtinfo.so.6","${router}/libncurses/lib/libtinfo.a");
 
 print "\n";
 

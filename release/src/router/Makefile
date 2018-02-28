@@ -14,8 +14,8 @@ include common.mak
 
 #TOMATO_EXPERIMENTAL=0
 
-#export PARALLEL_BUILD :=
-export PARALLEL_BUILD := -j`grep -c '^processor' /proc/cpuinfo`
+export PARALLEL_BUILD :=
+#export PARALLEL_BUILD := -j`grep -c '^processor' /proc/cpuinfo`
 
 #
 #
@@ -1974,7 +1974,7 @@ libncurses/stamp-h1:
 	CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -fPIC" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections -fPIC" \
 	LIBS="-lstdc++" \
-	$(CONFIGURE) --prefix=/usr --with-shared --with-normal --disable-debug --without-ada --without-manpages --without-progs --without-tests --with-termlib --enable-rpath
+	$(CONFIGURE) --prefix=/usr --with-shared --with-normal --disable-debug --without-ada --without-manpages --without-progs --without-tests --with-termlib
 	touch libncurses/stamp-h1
 
 libncurses: libncurses/stamp-h1
@@ -2006,11 +2006,14 @@ libncurses-install: libncurses
 	$(STRIP) $(INSTALLDIR)/libncurses/usr/lib/libform.so.6
 	install libncurses/lib/libmenu.so.6.0 $(INSTALLDIR)/libncurses/usr/lib/libmenu.so.6
 	$(STRIP) $(INSTALLDIR)/libncurses/usr/lib/libmenu.so.6
+	install libncurses/lib/libtinfo.so.6.0 $(INSTALLDIR)/libncurses/usr/lib/libtinfo.so.6
+	$(STRIP) $(INSTALLDIR)/libncurses/usr/lib/libtinfo.so.6
 	cd $(INSTALLDIR)/libncurses/usr/lib/ && \
 		ln -sf libncurses.so.6 libncurses.so && \
 		ln -sf libpanel.so.6 libpanel.so && \
 		ln -sf libform.so.6 libform.so && \
-		ln -sf libmenu.so.6 libmenu.so
+		ln -sf libmenu.so.6 libmenu.so && \
+		ln -sf libtinfo.so.6 libtinfo.so
 
 mysql/stamp-h1: openssl zlib libncurses
 	@$(SEP)
