@@ -15,6 +15,7 @@ PF_EXT_SLIB+=condition connlimit connmark geoip icmp iprange layer7
 PF_EXT_SLIB+=length limit mac mark multiport recent standard state quota
 PF_EXT_SLIB+=tcp tcpmss time tos u32 udp web dscp connbytes webmon string bcount conntrack
 PF_EXT_SLIB+=IMQ ipp2p
+PF_EXT_SLIB+=TPROXY tproxy socket
 ifeq ($(CONFIG_LINUX26),y)
 PF_EXT_SLIB+=policy
 PF_EXT_SLIB+=hashlimit NFQUEUE NOTRACK
