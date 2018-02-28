@@ -90,6 +90,11 @@ checkentry_v0(const char *tablename,
 {
 	struct xt_mark_target_info *markinfo = targinfo;
 
+	if (strcmp(tablename, "mangle") && strcmp(tablename, "tproxy")) {
+		printk(KERN_WARNING "MARK: only valid in mangle or tproxy table\n");
+		return 0;
+	}
+
 	if (markinfo->mark > 0xffffffff) {
 		printk(KERN_WARNING "MARK: Only supports 32bit wide mark\n");
 		return 0;
@@ -105,6 +110,11 @@ checkentry_v1(const char *tablename,
 	      unsigned int hook_mask)
 {
 	struct xt_mark_target_info_v1 *markinfo = targinfo;
+
+	if (strcmp(tablename, "mangle") && strcmp(tablename, "tproxy")) {
+		printk(KERN_WARNING "MARK: only valid in mangle or tproxy table\n");
+		return 0;
+	}
 
 	if (markinfo->mode != XT_MARK_SET
 	    && markinfo->mode != XT_MARK_AND
@@ -160,7 +170,6 @@ static struct xt_target xt_mark_target[] = {
 		.checkentry	= checkentry_v0,
 		.target		= target_v0,
 		.targetsize	= sizeof(struct xt_mark_target_info),
-		.table		= "mangle",
 		.me		= THIS_MODULE,
 	},
 	{
@@ -175,7 +184,6 @@ static struct xt_target xt_mark_target[] = {
 		.compat_from_user = compat_from_user_v1,
 		.compat_to_user	= compat_to_user_v1,
 #endif
-		.table		= "mangle",
 		.me		= THIS_MODULE,
 	},
 	{
@@ -185,7 +193,6 @@ static struct xt_target xt_mark_target[] = {
 		.checkentry	= checkentry_v0,
 		.target		= target_v0,
 		.targetsize	= sizeof(struct xt_mark_target_info),
-		.table		= "mangle",
 		.me		= THIS_MODULE,
 	},
 };

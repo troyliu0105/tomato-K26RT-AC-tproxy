@@ -41,6 +41,7 @@ obj-$(CONFIG_IP_NF_FILTER) += iptable_filter.o
 obj-$(CONFIG_IP_NF_MANGLE) += iptable_mangle.o
 obj-$(CONFIG_NF_NAT) += iptable_nat.o
 obj-$(CONFIG_IP_NF_RAW) += iptable_raw.o
+obj-$(CONFIG_IP_NF_TPROXY_TABLE) += iptable_tproxy.o
 
 # matches
 obj-$(CONFIG_IP_NF_MATCH_IPV4OPTIONS) += ipt_ipv4options.o
@@ -59,6 +60,7 @@ obj-$(CONFIG_IP_NF_MATCH_EXP) += ipt_exp.o
 obj-$(CONFIG_IP_NF_MATCH_BCOUNT) += ipt_bcount.o
 obj-$(CONFIG_IP_NF_MATCH_WEBMON) += ipt_webmon.o
 obj-$(CONFIG_IP_NF_MATCH_ACCOUNT) += ipt_account.o
+obj-$(CONFIG_IP_NF_MATCH_SOCKET) += ipt_socket.o
 
 # targets
 obj-$(CONFIG_IP_NF_TARGET_REJECT) += ipt_REJECT.o
@@ -76,6 +78,7 @@ obj-$(CONFIG_IP_NF_TARGET_ULOG) += ipt_ULOG.o
 obj-$(CONFIG_IP_NF_TARGET_CLUSTERIP) += ipt_CLUSTERIP.o
 obj-$(CONFIG_IP_NF_TARGET_MACSAVE) += ipt_MACSAVE.o
 obj-$(CONFIG_IP_NF_TARGET_BCOUNT) += ipt_BCOUNT.o
+obj-$(CONFIG_IP_NF_TARGET_TPROXY) += ipt_TPROXY.o
 
 # generic ARP tables
 obj-$(CONFIG_IP_NF_ARPTABLES) += arp_tables.o

@@ -65,6 +65,7 @@ struct inet_request_sock {
 #endif
 	__be32			loc_addr;
 	__be32			rmt_addr;
+	__be16			loc_port;
 	__be16			rmt_port;
 	u16			snd_wscale : 4, 
 				rcv_wscale : 4, 
@@ -128,7 +129,8 @@ struct inet_sock {
 				is_icsk:1,
 				freebind:1,
 				hdrincl:1,
-				mc_loop:1;
+				mc_loop:1,
+				transparent:1;
 	int			mc_index;
 	__be32			mc_addr;
 	struct ip_mc_socklist	*mc_list;

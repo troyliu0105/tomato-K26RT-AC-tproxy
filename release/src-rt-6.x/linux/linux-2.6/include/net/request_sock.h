@@ -34,7 +34,8 @@ struct request_sock_ops {
 				       struct request_sock *req,
 				       struct dst_entry *dst);
 	void		(*send_ack)(struct sk_buff *skb,
-				    struct request_sock *req);
+				    struct request_sock *req,
+				    int reply_flags);
 	void		(*send_reset)(struct sock *sk,
 				      struct sk_buff *skb);
 	void		(*destructor)(struct request_sock *req);

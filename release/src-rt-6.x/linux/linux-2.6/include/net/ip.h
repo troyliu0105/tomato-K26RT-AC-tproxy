@@ -138,8 +138,11 @@ static inline void ip_tr_mc_map(__be32 addr, char *buf)
 	buf[5]=0x00;
 }
 
+#define IP_REPLY_ARG_NOSRCCHECK 1
+
 struct ip_reply_arg {
 	struct kvec iov[1];   
+	int	    flags;
 	__wsum 	    csum;
 	int	    csumoffset; /* u16 offset of csum in iov[0].iov_base */
 				/* -1 if not needed */ 
@@ -328,7 +331,8 @@ enum ip_defrag_users
 	IP_DEFRAG_CONNTRACK_OUT,
 	IP_DEFRAG_VS_IN,
 	IP_DEFRAG_VS_OUT,
-	IP_DEFRAG_VS_FWD
+	IP_DEFRAG_VS_FWD,
+	IP_DEFRAG_TP_IN,
 };
 
 struct sk_buff *ip_defrag(struct sk_buff *skb, u32 user);

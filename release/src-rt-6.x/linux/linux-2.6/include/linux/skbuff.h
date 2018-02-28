@@ -108,6 +108,13 @@ struct nf_bridge_info {
 };
 #endif
 
+#ifdef CONFIG_IP_NF_TPROXY
+struct nf_tproxy_info {
+	__u32 redirect_address;
+	__u16 redirect_port;
+};
+#endif
+
 struct sk_buff_head {
 	/* These two members must be first. */
 	struct sk_buff	*next;
@@ -320,6 +327,9 @@ struct sk_buff {
 #endif
 #ifdef CONFIG_BRIDGE_NETFILTER
 	struct nf_bridge_info	*nf_bridge;
+#endif
+#ifdef CONFIG_IP_NF_TPROXY
+	struct nf_tproxy_info	nf_tproxy;
 #endif
 #ifdef CONFIG_NET_SCHED
 	__u16			tc_index;	/* traffic control index */

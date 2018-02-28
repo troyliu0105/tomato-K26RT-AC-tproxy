@@ -368,6 +368,47 @@ config IP_NF_RAW
 	  If you want to compile it as a module, say M here and read
 	  <file:Documentation/modules.txt>.  If unsure, say `N'.
 
+# tproxy table
+config IP_NF_TPROXY
+	bool "Transparent proxying support"
+	depends on IP_NF_IPTABLES
+	help
+	  Transparent proxying. For more information see
+	  http://www.balabit.com/downloads/tproxy.
+
+	  If unsure, say `N'.
+
+config IP_NF_TPROXY_TABLE
+	tristate "`tproxy' iptables table"
+	depends on IP_NF_TPROXY
+	help
+	  Adds the `tproxy' table to iptables.  You will need this if
+	  you plan doing anything meaningful with the transparent
+	  proxying support.
+
+	  To compile it as a module, choose M here.  If unsure, say `N'.
+
+config IP_NF_TARGET_TPROXY
+	tristate "TPROXY target support"
+	depends on IP_NF_TPROXY_TABLE
+	help
+	  This option adds a `TPROXY' target, which is somewhat similar to
+	  REDIRECT.  It can only be used in the tproxy table and is useful
+	  to redirect traffic to a transparent proxy.  It does _not_ depend
+	  on Netfilter connection tracking.
+
+	  To compile it as a module, choose M here.  If unsure, say N.
+
+config IP_NF_MATCH_SOCKET
+	tristate "socket match support"
+	depends on IP_NF_TPROXY_TABLE
+	help
+	  This option adds a `socket' match, which can be used to match
+	  packets for which a TCP or UDP socket lookup finds a valid socket.
+	  It can only be used in the tproxy table.
+
+	  To compile it as a module, choose M here.  If unsure, say N.
+
 # ARP tables
 config IP_NF_ARPTABLES
 	tristate "ARP tables support"

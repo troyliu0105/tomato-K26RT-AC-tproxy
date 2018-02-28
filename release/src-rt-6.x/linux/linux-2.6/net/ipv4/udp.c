@@ -308,6 +308,14 @@ static inline struct sock *__udp4_lib_lookup_skb(struct sk_buff *skb,
 					 udptable);
 }
 
+struct sock *udp4_lib_lookup(__be32 saddr, __be16 sport,
+			       __be32 daddr, __be16 dport,
+			       int dif)
+{
+	return __udp4_lib_lookup(saddr, sport, daddr, dport, dif, udp_hash);
+}
+EXPORT_SYMBOL_GPL(udp4_lib_lookup);
+
 static inline struct sock *udp_v4_mcast_next(struct sock *sk,
 					     __be16 loc_port, __be32 loc_addr,
 					     __be16 rmt_port, __be32 rmt_addr,
@@ -1163,6 +1171,12 @@ int __udp4_lib_rcv(struct sk_buff *skb, struct hlist_head udptable[],
 
 	if (rt->rt_flags & (RTCF_BROADCAST|RTCF_MULTICAST))
 		return __udp4_lib_mcast_deliver(skb, uh, saddr, daddr, udptable);
+
+#ifdef CONFIG_IP_NF_TPROXY
+    if (skb->nf_tproxy.redirect_address && skb->nf_tproxy.redirect_port)
+        sk = __udp4_lib_lookup(saddr, uh->source, skb->nf_tproxy.redirect_address, skb->nf_tproxy.redirect_port, skb->dev->ifindex, udptable);
+    else
+#endif
 
 	sk = __udp4_lib_lookup_skb(skb, uh->source, uh->dest, udptable);
 

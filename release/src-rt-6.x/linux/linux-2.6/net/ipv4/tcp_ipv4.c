@@ -617,6 +617,7 @@ static void tcp_v4_send_reset(struct sock *sk, struct sk_buff *skb)
 				      ip_hdr(skb)->saddr, /* XXX */
 				      sizeof(struct tcphdr), IPPROTO_TCP, 0);
 	arg.csumoffset = offsetof(struct tcphdr, check) / 2;
+	arg.flags = (sk && inet_sk(sk)->transparent) ? IP_REPLY_ARG_NOSRCCHECK : 0;
 
 	ip_send_reply(tcp_socket->sk, skb, &arg, arg.iov[0].iov_len);
 
@@ -630,7 +631,7 @@ static void tcp_v4_send_reset(struct sock *sk, struct sk_buff *skb)
 
 static void tcp_v4_send_ack(struct tcp_timewait_sock *twsk,
 			    struct sk_buff *skb, u32 seq, u32 ack,
-			    u32 win, u32 ts)
+			    u32 win, u32 ts, int reply_flags)
 {
 	struct tcphdr *th = tcp_hdr(skb);
 	struct {
@@ -706,36 +707,37 @@ static void tcp_v4_send_ack(struct tcp_timewait_sock *twsk,
 					arg.iov[0].iov_len);
 	}
 #endif
+	arg.flags = reply_flags;
 	arg.csum = csum_tcpudp_nofold(ip_hdr(skb)->daddr,
 				      ip_hdr(skb)->saddr, /* XXX */
 				      arg.iov[0].iov_len, IPPROTO_TCP, 0);
 	arg.csumoffset = offsetof(struct tcphdr, check) / 2;
 	if (twsk)
 		arg.bound_dev_if = twsk->tw_sk.tw_bound_dev_if;
-
 	ip_send_reply(tcp_socket->sk, skb, &arg, arg.iov[0].iov_len);
 
 	TCP_INC_STATS_BH(TCP_MIB_OUTSEGS);
 }
 
-static void tcp_v4_timewait_ack(struct sock *sk, struct sk_buff *skb)
+static void tcp_v4_timewait_ack(struct sock *sk, struct sk_buff *skb, int reply_flags)
 {
 	struct inet_timewait_sock *tw = inet_twsk(sk);
 	struct tcp_timewait_sock *tcptw = tcp_twsk(sk);
 
 	tcp_v4_send_ack(tcptw, skb, tcptw->tw_snd_nxt, tcptw->tw_rcv_nxt,
 			tcptw->tw_rcv_wnd >> tw->tw_rcv_wscale,
-			tcptw->tw_ts_recent);
+			tcptw->tw_ts_recent, reply_flags);
 
 	inet_twsk_put(tw);
 }
 
 static void tcp_v4_reqsk_send_ack(struct sk_buff *skb,
-				  struct request_sock *req)
+				  struct request_sock *req,
+				  int reply_flags)
 {
 	tcp_v4_send_ack(NULL, skb, tcp_rsk(req)->snt_isn + 1,
 			tcp_rsk(req)->rcv_isn + 1, req->rcv_wnd,
-			req->ts_recent);
+			req->ts_recent, reply_flags);
 }
 
 /*
@@ -1503,6 +1505,15 @@ static struct sock *tcp_v4_hnd_req(struct sock *sk, struct sk_buff *skb)
 	if (req)
 		return tcp_check_req(sk, skb, req, prev);
 
+#ifdef CONFIG_IP_NF_TPROXY
+	nsk = NULL;
+	if (skb->nf_tproxy.redirect_address && skb->nf_tproxy.redirect_port)
+		nsk = inet_lookup_established(&tcp_hashinfo, iph->saddr, th->source,
+					      skb->nf_tproxy.redirect_address,
+					      skb->nf_tproxy.redirect_port,
+					      inet_iif(skb));
+	if (!nsk)
+#endif
 	nsk = inet_lookup_established(&tcp_hashinfo, iph->saddr, th->source,
 				      iph->daddr, th->dest, inet_iif(skb));
 
@@ -1661,6 +1672,15 @@ int tcp_v4_rcv(struct sk_buff *skb)
 	TCP_SKB_CB(skb)->flags	 = iph->tos;
 	TCP_SKB_CB(skb)->sacked	 = 0;
 
+#ifdef CONFIG_IP_NF_TPROXY
+sk = NULL;
+if (skb->nf_tproxy.redirect_address && skb->nf_tproxy.redirect_port)
+  sk = __inet_lookup(&tcp_hashinfo, iph->saddr, th->source,
+                     skb->nf_tproxy.redirect_address,
+                     skb->nf_tproxy.redirect_port, inet_iif(skb));
+if (!sk)
+#endif
+
 	sk = __inet_lookup_skb(&tcp_hashinfo, skb, th->source, th->dest);
 	if (!sk)
 		goto no_tcp_socket;
@@ -1734,9 +1754,20 @@ do_time_wait:
 	}
 	switch (tcp_timewait_state_process(inet_twsk(sk), skb, th)) {
 	case TCP_TW_SYN: {
-		struct sock *sk2 = inet_lookup_listener(&tcp_hashinfo,
-							iph->daddr, th->dest,
-							inet_iif(skb));
+		struct sock *sk2;
+
+#ifdef CONFIG_IP_NF_TPROXY
+		sk2 = NULL;
+		if (skb->nf_tproxy.redirect_address && skb->nf_tproxy.redirect_port)
+			sk2 = inet_lookup_listener(&tcp_hashinfo,
+						   skb->nf_tproxy.redirect_address,
+						   skb->nf_tproxy.redirect_port,
+						   inet_iif(skb));
+		if (!sk2)
+#endif
+		sk2 = inet_lookup_listener(&tcp_hashinfo,
+					   iph->daddr, th->dest,
+					   inet_iif(skb));
 		if (sk2) {
 			inet_twsk_deschedule(inet_twsk(sk), &tcp_death_row);
 			inet_twsk_put(inet_twsk(sk));
@@ -1746,7 +1777,8 @@ do_time_wait:
 		/* Fall through to ACK */
 	}
 	case TCP_TW_ACK:
-		tcp_v4_timewait_ack(sk, skb);
+		tcp_v4_timewait_ack(sk, skb, inet_twsk(sk)->tw_transparent ?
+				    IP_REPLY_ARG_NOSRCCHECK : 0);
 		break;
 	case TCP_TW_RST:
 		goto no_tcp_socket;
